@@ -4,6 +4,7 @@
 
 
 void pipeline_t::fetch() {
+
    // Variables related to instruction cache.
    // printf("Inside fetch!\n");
    unsigned int line1;
