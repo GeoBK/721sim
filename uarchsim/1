@@ -134,7 +134,6 @@ public:
 	bool			is_return;
 	bool			is_call;
 	bool			is_cond;
-	bool 			back_pred;
 
 	uint32_t			state;
 	uint32_t			conf;
@@ -165,7 +164,7 @@ private:
 	void RAS_update();
 	bool RAS_lookup(uint32_t* target);
 	void update_predictions(bool fm);				// "FM"
-	void make_predictions(unsigned int branch_history,vht* _vht, rep* _re);
+	void make_predictions(unsigned int branch_history);
 	void decode();
 
 
@@ -243,12 +242,12 @@ public:
 	//
 	unsigned int get_pred(unsigned int branch_history,
 	                      unsigned int PC, insn_t inst,
-	                      unsigned int comp_target, unsigned int* pred_tag,vht* _vht, rep* _rep);
+	                      unsigned int comp_target, unsigned int* pred_tag);
 	unsigned int get_pred(unsigned int branch_history,
 	                      unsigned int PC, insn_t inst,
 	                      unsigned int comp_target, unsigned int* pred_tag,
 	                      bool* conf,
-	                      bool* fm, uint64_t* bhr, bool* back_pred,vht* _vht, rep* _rep);	// "FM"
+	                      bool* fm);	// "FM"
 
 	void set_nconf(unsigned int pred_tag);
 	//

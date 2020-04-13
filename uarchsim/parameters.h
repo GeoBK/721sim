@@ -35,6 +35,17 @@ extern bool         IDEAL_AGE_BASED;
 extern unsigned int FU_LANE_MATRIX[];
 extern unsigned int FU_LAT[];
 
+// VHT and REP
+extern uint64_t bct_size;
+extern uint64_t bdc_size;
+extern uint64_t bdc_assoc;
+extern uint64_t rep_size;
+extern uint64_t num_counter;
+extern uint64_t assoc;
+
+
+
+
 // L1 Data Cache.
 extern unsigned int L1_DC_SETS;
 extern unsigned int L1_DC_ASSOC;

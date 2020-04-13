@@ -35,6 +35,8 @@ void pipeline_t::fetch() {
    unsigned int pred_tag;
    bool conf;
    bool fm;
+   uint64_t bhr;
+   bool back_pred;
 
 
    /////////////////////////////
@@ -116,6 +118,7 @@ void pipeline_t::fetch() {
       PAY.buf[index].sequence = sequence;
       PAY.buf[index].fetch_exception = fetch_exception;
       PAY.buf[index].fetch_exception_cause = trap_cause;
+      
 
       //////////////////////////////////////////////////////
       // map_to_actual()
@@ -143,7 +146,7 @@ void pipeline_t::fetch() {
             direct_target = JUMP_TARGET;
             next_pc = (PERFECT_BRANCH_PRED ?
                           (actual ? actual->a_next_pc : direct_target) :
-                          BP.get_pred(history_reg, pc, insn, direct_target, &pred_tag, &conf, &fm));
+                          BP.get_pred(history_reg, pc, insn, direct_target, &pred_tag, &conf, &fm, &bhr, &back_pred,_vht,_rep));
             assert(next_pc == direct_target);
             stop = true;
             break;
@@ -151,7 +154,7 @@ void pipeline_t::fetch() {
          case OP_JALR:
             next_pc = (PERFECT_BRANCH_PRED ?
                           (actual ? actual->a_next_pc : INCREMENT_PC(pc)) :
-                          BP.get_pred(history_reg, pc, insn, 0, &pred_tag, &conf, &fm));
+                          BP.get_pred(history_reg, pc, insn, 0, &pred_tag, &conf, &fm ,&bhr, &back_pred,_vht,_rep));
             stop = true;
             break;
 
@@ -159,7 +162,7 @@ void pipeline_t::fetch() {
             direct_target = BRANCH_TARGET;
             next_pc = (PERFECT_BRANCH_PRED ?
                           (actual ? actual->a_next_pc : INCREMENT_PC(pc)) :
-                          BP.get_pred(history_reg, pc, insn, direct_target, &pred_tag, &conf, &fm));
+                          BP.get_pred(history_reg, pc, insn, direct_target, &pred_tag, &conf, &fm, &bhr, &back_pred,_vht,_rep ));
             assert((next_pc == direct_target) || (next_pc == INCREMENT_PC(pc)));
             if (next_pc != INCREMENT_PC(pc))
                stop = true;
@@ -173,6 +176,8 @@ void pipeline_t::fetch() {
       // Set payload buffer entry's next_pc and pred_tag.
       PAY.buf[index].next_pc = next_pc;
       PAY.buf[index].pred_tag = pred_tag;
+      PAY.buf[index].bhr = bhr;
+       PAY.buf[index].back_pred = back_pred;
 
       // Latch instruction into fetch-decode pipeline register.
       DECODE[i].valid = true;

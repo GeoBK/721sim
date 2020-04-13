@@ -72,6 +72,8 @@ pipeline_t::pipeline_t(
     uint32_t  retire_width,
     uint32_t  fu_lane_matrix[],
     uint32_t  fu_lat[]
+    uint32_t rep_width,
+    uint32_t vht_width
 ):
   processor_t(_sim,_mmu,_id),
   statsModule(this),
@@ -101,6 +103,8 @@ pipeline_t::pipeline_t(
   this->dispatch_width = dispatch_width;
   this->issue_width = issue_width;
   this->retire_width = retire_width;
+  this->vht_width = vht_width;
+  this->rep_width = rep_width;
 
   #ifdef RISCV_MICRO_DEBUG
     mkdir("micros_log",S_IRWXU);
@@ -180,7 +184,7 @@ pipeline_t::pipeline_t(
   /////////////////////////////////////////////////////////////
   // Pipeline register between the Fetch and Decode Stages.
   /////////////////////////////////////////////////////////////
-  DECODE = new pipeline_register[fetch_width];
+  DECODE = new pipeline_register[];
 
   /////////////////////////////////////////////////////////////
   // Pipeline register between the Rename1 and Rename2
@@ -202,6 +206,17 @@ pipeline_t::pipeline_t(
   // Execution Lanes.
   /////////////////////////////////////////////////////////////
   Execution_Lanes = new lane[issue_width];
+
+  ////////////////////////////////////////////////////////////
+  //VHT and REP
+  ///////////////////////////////////////
+
+  _vht = new vht(bct_size,bdc_size,bdc_assoc);
+  _rep = new rep(rep_size,num_counter,assoc);
+
+
+  
+
 
   for (i = 0; i < issue_width; i++) {
     ex_depth = 0;
@@ -236,6 +251,19 @@ pipeline_t::pipeline_t(
   // Load-Store Unit.
   /////////////////////////////////////////////////////////////
 
+
+  /////////////////////////////////////////////////////////////
+  // Value History Table
+  // ///////////////////////////////////
+
+
+  // _vht = new vht[vht_width];
+
+  ///////////////////////////////
+  // Rare Event Predictor
+  // /////////////////////
+    
+ //_rep = new rep[rep_width];
 
   // Declare and set the various knobs in the knobs database.
   // These will be printed in the stats.log file at the end of the run.
@@ -443,7 +471,7 @@ bool pipeline_t::step_micro(size_t n,size_t& instret)
     if (unlikely(debug))
     {
       //TODO: If the system suddenly enters debug mode, 
-      //1) Truncate execution at the AL head only once, set a flag to indicate this has already happened
+      //1) Truncate execution at the AL head only kjonce, set a flag to indicate this has already happened
       //2) If all state is maintained, this should just work.
       while (instret < n)
       {

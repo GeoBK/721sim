@@ -88,66 +88,15 @@ void pipeline_t::writeback(unsigned int lane_number) {
             REN->resolve(PAY.buf[index].AL_index, PAY.buf[index].branch_ID, true);
             resolve(PAY.buf[index].branch_ID, true);
 
-            //////////////////VHT and REP////////////////////
-            uint64_t dummy_bhr = 0xFFFFFFFFFFFFFFFF;
-            uint64_t value;
-            int32_t diff;
-            bool prediction;
-            bool actual_outcome;
-            if(PAY.buf[index].next_pc = (PAY.buf[index].pc + 4))
-            {
-               actual_outcome = false; //Not taken
-            }
-            else
-            {
-               actual_outcome = true; //Taken
-            }
-            
-         
-            
-            // Assumption : Not checking for VHT hit as BCT will have the information for all the outstanding branches
-               bool vht_hit = _vht->get_value(PAY.buf[index].pc,PAY.buf[index].bhr,&value);
-               //return diff from get_bvalue functionb to be used in update difference
-               bool rep_hit = _rep->get_prediction(PAY.buf[index].pc,PAY.buf[index].bhr,value,&prediction);
-                  _vht->decrement_os_branch_count(PAY.buf[index].pc,PAY.buf[index].bhr);
-                  _vht->update_branch_difference(PAY.buf[index].pc,PAY.buf[index].bhr, diff);
-               // Bp_prediction need to be stored along with REP prediction	
-               if(rep_hit)
-               {
-                  _rep->prediction_feedback( actual_outcome, PAY.buf[index].pc, PAY.buf[index].bhr, value, PAY.buf[index].back_pred, prediction)
-               }
-               
+
          }
          else {
             // Branch was mispredicted.
-            //////// VHT and REP ////////////////
-           
-            uint64_t dummy_bhr = 0xFFFFFFFFFFFFFFFF;
-            uint64_t value;
-            bool prediction;
-            bool vht_hit = _vht->get_value(PAY.buf[index].pc,PAY.buf[index].bhr,&value);
-            bool rep_hit = _rep->get_prediction(PAY.buf[index].pc,PAY.buf[index].bhr,value,&prediction);
-             _vht->decrement_os_branch_count(PAY.buf[index].pc,PAY.buf[index].bhr);
-            // count has to be decremented by the number of branches squashed
-            bool actual_outcome;
-            if(PAY.buf[index].next_pc == (PAY.buf[index].pc + 4))
-            {
-               actual_outcome = false;
-            }
-            else
-            {
-               actual_outcome = true;
-            }
-            
-            _rep->prediction_feedback( actual_outcome, PAY.buf[index].pc, PAY.buf[index].bhr, value, PAY.buf[index].back_pred, prediction);
-            
-            
+
             // Roll-back the fetch unit: PC and branch predictor.
-           //if(vht_hit && !rep_hit)
-            // {
             pc = PAY.buf[index].c_next_pc;					// PC gets the correct target of the resolved branch.
             BP.fix_pred(PAY.buf[index].pred_tag, PAY.buf[index].c_next_pc);	// Roll-back the branch predictor to the point of the resolved branch.
-           //  }
+ 
             // Clear the fetch unit's exception, amo, and csr flags.  The fetch unit stalls on these conditions.
             // Therefore, we can infer that the mispredicted branch is logically before any offending instruction,
             // and the condition should be cleared.

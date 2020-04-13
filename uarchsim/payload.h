@@ -59,6 +59,9 @@ typedef struct {
    uint64_t sequence;           // Unique sequence number for speculatively
                                 // fetched instructions.  Helpful for
                                 // logging (debug traces).
+   ////////REP and VHT///////////
+   uint64_t bhr;
+   bool back_pred;
 
    ////////////////////////
    // Set by Decode Stage.
