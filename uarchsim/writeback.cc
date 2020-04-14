@@ -104,7 +104,7 @@ void pipeline_t::writeback(unsigned int lane_number) {
             }
             
          
-            
+            diff = PAY.buf[index].A_log_reg - PAY.buf[index].B_log_reg;
             // Assumption : Not checking for VHT hit as BCT will have the information for all the outstanding branches
                bool vht_hit = _vht->get_value(PAY.buf[index].pc,PAY.buf[index].bhr,&value);
                //return diff from get_bvalue functionb to be used in update difference
@@ -127,7 +127,38 @@ void pipeline_t::writeback(unsigned int lane_number) {
             bool prediction;
             bool vht_hit = _vht->get_value(PAY.buf[index].pc,PAY.buf[index].bhr,&value);
             bool rep_hit = _rep->get_prediction(PAY.buf[index].pc,PAY.buf[index].bhr,value,&prediction);
-             _vht->decrement_os_branch_count(PAY.buf[index].pc,PAY.buf[index].bhr);
+             //uint64_t ALtail = REN->AL_tail();
+             uint64_t temp = REN->AL_tail();
+            if(temp > PAY.buf[index].AL_index)
+            {
+                  if(PAY.buf[temp].checkpoint)
+                  {
+                  _vht->decrement_os_branch_count(PAY.buf[temp].pc,PAY.buf[temp].bhr);
+                  }
+                  temp--;
+                
+            }
+            else if(temp>=0 && temp < PAY.buf[index].AL_index)
+            {
+               if(PAY.buf[temp].checkpoint)
+               {
+                  _vht->decrement_os_branch_count(PAY.buf[temp].pc,PAY.buf[temp].bhr);
+                  if(temp == 0)
+                     {
+                        temp = _vht->get_rob_size() -1;
+                     }
+                  else
+                     {
+                        temp--;
+                     }     
+               }
+               else
+               {
+                  temp--;
+               }
+               
+            }
+                
             // count has to be decremented by the number of branches squashed
             bool actual_outcome;
             if(PAY.buf[index].next_pc == (PAY.buf[index].pc + 4))

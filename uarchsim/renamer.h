@@ -606,6 +606,8 @@ public:
 	                       bool csr,
 	                       uint64_t PC);
 
+///////////////////VHT and REP////////////////////////////////
+	uint64_t AL_tail();
 
 	//////////////////////////////////////////
 	// Functions related to Schedule Stage. //

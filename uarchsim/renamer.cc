@@ -7,6 +7,8 @@ void renamer::copy_map(uint64_t* source, uint64_t* destination)
         destination[i]=source[i];
     }
 }
+
+ 
 renamer::renamer(uint64_t n_log_regs, uint64_t n_phys_regs, uint64_t n_branches)
 {
     assert(n_phys_regs>n_log_regs);
@@ -161,6 +163,12 @@ bool renamer::stall_dispatch(uint64_t bundle_inst)
         return true;
     }
     
+}
+
+uint64_t renamer :: AL_tail()
+{
+   return activelist->get_tail();
+
 }
 
 uint64_t renamer::dispatch_inst(bool dest_valid,

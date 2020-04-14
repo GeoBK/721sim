@@ -286,10 +286,10 @@ void bpred_interface::make_predictions(unsigned int branch_history, vht* _vht, r
 		rep_hit = _rep->get_prediction(cti_Q[cti_tail].pc,br_history,value,&prediction);
 		
 
-		if(vht_hit)
-		{
+		//if(vht_hit)
+		//{
 		 _vht->increment_os_branch_count(cti_Q[cti_tail].pc,br_history);
-		}
+		//}
 
 
 		if(vht_hit && rep_hit)
