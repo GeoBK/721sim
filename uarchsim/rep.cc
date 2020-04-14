@@ -101,8 +101,9 @@ bool rep::prediction_feedback(bool actual_outcome, uint64_t pc, uint64_t bhr, ui
                     }
                 }                
             }
-            if(rep_prediction==bp_prediction){
-                if(target_set->rep_nodes[i]->replacement_counter>0){
+            if(rep_prediction==bp_prediction)
+            {
+                if(target_set->rep_nodes[i]->replacement_counter>0)                
                 {
                     target_set->rep_nodes[i]->replacement_counter-=2;
                     if(target_set->rep_nodes[i]->replacement_counter<=0)

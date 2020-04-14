@@ -71,9 +71,11 @@ pipeline_t::pipeline_t(
     uint32_t  issue_width,
     uint32_t  retire_width,
     uint32_t  fu_lane_matrix[],
-    uint32_t  fu_lat[]
-    uint32_t rep_width,
-    uint32_t vht_width
+    uint32_t  fu_lat[],
+    uint32_t  rep_width,
+    uint32_t  bct_width,
+    uint32_t  bdc_width,
+    uint32_t  bdc_assoc
 ):
   processor_t(_sim,_mmu,_id),
   statsModule(this),
@@ -184,7 +186,7 @@ pipeline_t::pipeline_t(
   /////////////////////////////////////////////////////////////
   // Pipeline register between the Fetch and Decode Stages.
   /////////////////////////////////////////////////////////////
-  DECODE = new pipeline_register[];
+  DECODE = new pipeline_register[fetch_width];
 
   /////////////////////////////////////////////////////////////
   // Pipeline register between the Rename1 and Rename2
@@ -211,8 +213,8 @@ pipeline_t::pipeline_t(
   //VHT and REP
   ///////////////////////////////////////
 
-  _vht = new vht(bct_size,bdc_size,bdc_assoc);
-  _rep = new rep(rep_size,num_counter,assoc);
+  _vht = new vht(bct_width,bdc_width,bdc_assoc);
+  _rep = new rep(rep_width,num_counter,rep_assoc);
 
 
   

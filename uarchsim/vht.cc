@@ -24,7 +24,7 @@ bool vht::decrement_os_branch_count(uint64_t pc, uint64_t bhr)
 {
     _bct->decrement_bc(pc,bhr);
 }
-bool vht::update_branch_difference(uint64_t pc, uint64_t bhr, int64_t diff)
+bool vht::update_branch_difference(uint64_t pc, uint64_t bhr, int32_t diff)
 {
     _bdc->update_difference(pc,bhr,diff);
 }

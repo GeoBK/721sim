@@ -41,7 +41,7 @@ extern uint64_t bdc_size;
 extern uint64_t bdc_assoc;
 extern uint64_t rep_size;
 extern uint64_t num_counter;
-extern uint64_t assoc;
+extern uint64_t rep_assoc;
 
 
 

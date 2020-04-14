@@ -12,8 +12,7 @@ class set{
     bdc_node* diffs;
     set(uint64_t assoc);
 };
-class bdc{
-    static uint64_t update_count;
+class bdc{    
     set**    sets;
     uint64_t num_sets;
     uint64_t num_entries;  

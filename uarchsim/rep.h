@@ -1,3 +1,5 @@
+#ifndef REP_H
+#define REP_H
 #include <cinttypes>
 #define REPLACEMENT_MAX_COUNT 0x3f
 #define SMITH_COUNTER_MAX 0x3
@@ -31,3 +33,4 @@ class rep{
     bool get_prediction(uint64_t pc, uint64_t bhr, uint64_t value, bool* prediction);
     bool prediction_feedback(bool actual_outcome, uint64_t pc, uint64_t bhr, uint64_t value, bool bp_prediction, bool rep_prediction);
 };
+#endif //REP_H

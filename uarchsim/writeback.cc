@@ -114,7 +114,7 @@ void pipeline_t::writeback(unsigned int lane_number) {
                // Bp_prediction need to be stored along with REP prediction	
                if(rep_hit)
                {
-                  _rep->prediction_feedback( actual_outcome, PAY.buf[index].pc, PAY.buf[index].bhr, value, PAY.buf[index].back_pred, prediction)
+                  _rep->prediction_feedback( actual_outcome, PAY.buf[index].pc, PAY.buf[index].bhr, value, PAY.buf[index].back_pred, prediction);
                }
                
          }

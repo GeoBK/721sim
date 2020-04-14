@@ -1,4 +1,5 @@
 #include "bdc.h"
+uint64_t update_count = 0;
 set::set(uint64_t assoc){
     diffs = new bdc_node[assoc];
 }

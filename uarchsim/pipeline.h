@@ -167,7 +167,11 @@ public:
 	    uint32_t  issue_width,
 	    uint32_t  retire_width,
 	    uint32_t  fu_lane_matrix[],
-	    uint32_t  fu_lat[]
+	    uint32_t  fu_lat[],
+		uint32_t rep_width,
+    	uint32_t  bct_width,
+    	uint32_t  bdc_width,
+    	uint32_t  bdc_assoc
 	);
 
 	~pipeline_t();

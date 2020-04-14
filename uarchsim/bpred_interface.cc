@@ -489,7 +489,7 @@ unsigned int bpred_interface::get_pred(unsigned int branch_history,
                                        unsigned int PC, insn_t inst,
                                        unsigned int comp_target, unsigned int* pred_tag,
                                        bool* conf,
-                                       bool* fm, uint64_t* bhr, uint64_t* back_pred,vht* _vht, rep* _rep)				// "FM"
+                                       bool* fm, uint64_t* bhr, bool* back_pred,vht* _vht, rep* _rep)				// "FM"
 {
 
 	unsigned int tag;

@@ -78,7 +78,11 @@ sim_t::sim_t(size_t nprocs, size_t mem_mb, const std::vector<std::string>& args,
 		      ISSUE_WIDTH,
 		      RETIRE_WIDTH,
 		      FU_LANE_MATRIX,
-		      FU_LAT);
+		      FU_LAT,
+          rep_size,
+          bct_size,
+          bdc_size,
+          bdc_assoc);
 		  procs[i]->set_proc_type("MICRO_SIM");
     }
 	}
