@@ -1,8 +1,7 @@
 #include "vht.h"
-vht::vht(uint64_t bct_size, uint64_t bdc_size, uint64_t bdc_assoc,uint64_t rob_size){
+vht::vht(uint64_t bct_size, uint64_t bdc_size, uint64_t bdc_assoc){
     _bdc = new bdc(bdc_size,bdc_assoc);
     _bct = new bct(bct_size);
-    rob_size = rob_size;
 }
 
 
@@ -28,9 +27,4 @@ bool vht::decrement_os_branch_count(uint64_t pc, uint64_t bhr)
 bool vht::update_branch_difference(uint64_t pc, uint64_t bhr, int32_t diff)
 {
     _bdc->update_difference(pc,bhr,diff);
-}
-
-uint64_t vht :: get_rob_size()
-{
-    return rob_size;
 }

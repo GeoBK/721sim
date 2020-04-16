@@ -213,7 +213,7 @@ pipeline_t::pipeline_t(
   //VHT and REP
   ///////////////////////////////////////
 
-  _vht = new vht(bct_width,bdc_width,bdc_assoc,rob_size);
+  _vht = new vht(bct_width,bdc_width,bdc_assoc);
   _rep = new rep(rep_width,num_counter,rep_assoc);
 
 

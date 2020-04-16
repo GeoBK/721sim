@@ -171,6 +171,11 @@ uint64_t renamer :: AL_tail()
 
 }
 
+uint64_t renamer::get_AL_size()
+{
+    return al_size;
+}
+
 uint64_t renamer::dispatch_inst(bool dest_valid,
 	                       uint64_t log_reg,
 	                       uint64_t phys_reg,
