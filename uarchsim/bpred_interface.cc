@@ -294,11 +294,12 @@ void bpred_interface::make_predictions(unsigned int branch_history, vht* _vht, r
 
 		if(vht_hit && rep_hit)
 		{
-				   
+			printf("VHT_hit && REP_hit");	   
 		   	cti_Q[cti_tail].taken = prediction;
-			cti_Q[cti_tail].use_global_history = true;
-			cti_Q[cti_tail].global_history = branch_history;
-			pred_index = ((branch_history & HIST_MASK) ^
+			//cti_Q[cti_tail].use_global_history = true;
+			//cti_Q[cti_tail].global_history = branch_history;
+			history = cti_Q[cti_tail].history;
+			pred_index = ((history & HIST_MASK) ^
 			              ((cti_Q[cti_tail].pc / insn_size) & PC_MASK)) & BP_INDEX_MASK;
 			cti_Q[cti_tail].back_pred = pred_table[pred_index].pred;
 		}
@@ -307,12 +308,14 @@ void bpred_interface::make_predictions(unsigned int branch_history, vht* _vht, r
 	
 			if (branch_history == 0xFFFFFFFF)
 			{
+				printf("Branch_HIstory xFFFFFFF");
 			history = cti_Q[cti_tail].history;
 			pred_index = ((cti_Q[cti_tail].history & HIST_MASK) ^
 			              ((cti_Q[cti_tail].pc / insn_size) & PC_MASK)) & BP_INDEX_MASK;
 			}
 			else
 			{
+				printf("Branch_HIstory not xFFFFFFF");
 			history = branch_history;
 			pred_index = ((branch_history & HIST_MASK) ^
 			              ((cti_Q[cti_tail].pc / insn_size) & PC_MASK)) & BP_INDEX_MASK;
