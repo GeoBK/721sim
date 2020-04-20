@@ -283,49 +283,37 @@ void bpred_interface::make_predictions(unsigned int branch_history, vht* _vht, r
 	{
 	    br_history = (uint64_t)branch_history;
 		vht_hit = _vht->get_value(cti_Q[cti_tail].pc,br_history,&value);
-		rep_hit = _rep->get_prediction(cti_Q[cti_tail].pc,br_history,value,&prediction);
-		
-
-		//if(vht_hit)
-		//{
-		 _vht->increment_os_branch_count(cti_Q[cti_tail].pc,br_history);
-		//}
-
+		rep_hit = _rep->get_prediction(cti_Q[cti_tail].pc,br_history,value,&prediction);		
+		_vht->increment_os_branch_count(cti_Q[cti_tail].pc,br_history);
 
 		if(vht_hit && rep_hit)
 		{
 			printf("VHT_hit && REP_hit");	   
 		   	cti_Q[cti_tail].taken = prediction;
-			//cti_Q[cti_tail].use_global_history = true;
-			//cti_Q[cti_tail].global_history = branch_history;
 			history = cti_Q[cti_tail].history;
 			pred_index = ((history & HIST_MASK) ^
-			              ((cti_Q[cti_tail].pc / insn_size) & PC_MASK)) & BP_INDEX_MASK;
+			              ((cti_Q[cti_tail].pc / insn_size) & PC_MASK)) & BP_INDEX_MASK;			
 			cti_Q[cti_tail].back_pred = pred_table[pred_index].pred;
 		}
 		else
-		{
-	
+		{	
 			if (branch_history == 0xFFFFFFFF)
 			{
-				printf("Branch_HIstory xFFFFFFF");
-			history = cti_Q[cti_tail].history;
-			pred_index = ((cti_Q[cti_tail].history & HIST_MASK) ^
+				history = cti_Q[cti_tail].history;
+				pred_index = ((cti_Q[cti_tail].history & HIST_MASK) ^
 			              ((cti_Q[cti_tail].pc / insn_size) & PC_MASK)) & BP_INDEX_MASK;
 			}
 			else
-			{
-				printf("Branch_HIstory not xFFFFFFF");
-			history = branch_history;
-			pred_index = ((branch_history & HIST_MASK) ^
+			{				
+				history = branch_history;
+				pred_index = ((branch_history & HIST_MASK) ^
 			              ((cti_Q[cti_tail].pc / insn_size) & PC_MASK)) & BP_INDEX_MASK;
-			cti_Q[cti_tail].use_global_history = true;
-			cti_Q[cti_tail].global_history = branch_history;
+				cti_Q[cti_tail].use_global_history = true;
+				cti_Q[cti_tail].global_history = branch_history;
 			}
-
 			cti_Q[cti_tail].taken = pred_table[pred_index].pred;
 			cti_Q[cti_tail].back_pred = pred_table[pred_index].pred;
-               }
+        }
 
 		if (cti_Q[cti_tail].taken) {
 			history = (history >> 1) | HIST_BIT;
@@ -339,7 +327,7 @@ void bpred_interface::make_predictions(unsigned int branch_history, vht* _vht, r
 		cti_Q[cti_tail].conf = conf_table[conf_index].pred;
 
 		cti_Q[cti_tail].fm = fm_table[pred_index].pred;		// "FM"
-    inc_counter(ctiq_write_count);
+    	inc_counter(ctiq_write_count);
 	}
 	else
 	{
