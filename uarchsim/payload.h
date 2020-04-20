@@ -74,6 +74,8 @@ typedef struct {
 
    bool checkpoint;             // If 'true', this instruction is a branch
                                 // that needs a checkpoint.
+   
+   bool is_cond;
 
    // Note: At present, the decode stage does not split RISCV instructions
    // into micro-instructions.  Nonetheless, the pipeline does support

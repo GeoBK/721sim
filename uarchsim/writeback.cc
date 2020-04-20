@@ -109,8 +109,11 @@ void pipeline_t::writeback(unsigned int lane_number) {
                bool vht_hit = _vht->get_value(PAY.buf[index].pc,PAY.buf[index].bhr,&value);
                //return diff from get_bvalue functionb to be used in update difference
                bool rep_hit = _rep->get_prediction(PAY.buf[index].pc,PAY.buf[index].bhr,value,&prediction);
+               if(PAY.buf[index].is_cond)
+               {
                   _vht->decrement_os_branch_count(PAY.buf[index].pc,PAY.buf[index].bhr);
-                  _vht->update_branch_difference(PAY.buf[index].pc,PAY.buf[index].bhr, diff);
+               }                  
+               _vht->update_branch_difference(PAY.buf[index].pc,PAY.buf[index].bhr, diff);
                // Bp_prediction need to be stored along with REP prediction	
                if(rep_hit)
                {
@@ -129,15 +132,21 @@ void pipeline_t::writeback(unsigned int lane_number) {
             bool rep_hit = _rep->get_prediction(PAY.buf[index].pc,PAY.buf[index].bhr,value,&prediction);
              //uint64_t ALtail = REN->AL_tail();
             uint64_t misp_tail = REN->AL_tail();
+            // printf("misp_tail: %" PRIu64"\n", misp_tail);
+            // printf("Current instruction's AL_index: %" PRIu64"\n", PAY.buf[index].AL_index);
             while(misp_tail!=PAY.buf[index].AL_index)
             {
+               if(misp_tail==0)misp_tail=REN->get_AL_size();               
                misp_tail--;
-               if(misp_tail<0)misp_tail=REN->get_AL_size()-1;
-               if(PAY.buf[misp_tail].checkpoint)
+               // printf("misp_tail: %" PRIu64"\n", misp_tail);
+               unsigned PL_index = REN->get_PL_index_from_AL_index(misp_tail);
+               // printf("PL_index: %u\n",PL_index);               
+               if(PAY.buf[PL_index].checkpoint && PAY.buf[PL_index].is_cond)
                {
-                  _vht->decrement_os_branch_count(PAY.buf[misp_tail].pc,PAY.buf[misp_tail].bhr);
+                  // printf("Decremented os count after branch mispred\n");
+                  _vht->decrement_os_branch_count(PAY.buf[PL_index].pc,PAY.buf[PL_index].bhr);
                }                        
-            }                
+            }
             // count has to be decremented by the number of branches squashed
             bool actual_outcome;
             if(PAY.buf[index].next_pc == (PAY.buf[index].pc + 4))

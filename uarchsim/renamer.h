@@ -110,6 +110,7 @@ struct ALEntry{
 	uint64_t        lrn;                    //logical register number
     uint64_t        prn;                    //physical register number
     uint64_t        pc;
+	unsigned int	PL_index;
 
 };
 
@@ -264,6 +265,10 @@ class ActiveList{
 	bool get_exception(uint64_t AL_index)
 	{
 		return active_list[AL_index].has_exception;
+	}
+	unsigned int get_PL_index(uint64_t AL_index)
+	{
+		return active_list[AL_index].PL_index;
 	}
 };
 
@@ -604,10 +609,11 @@ public:
 	                       bool branch,
 	                       bool amo,
 	                       bool csr,
-	                       uint64_t PC);
+	                       uint64_t PC,
+						   unsigned int PL_index);
 
 ///////////////////VHT and REP////////////////////////////////
-	uint64_t AL_tail();
+	uint64_t AL_tail();	
 
 	//////////////////////////////////////////
 	// Functions related to Schedule Stage. //
@@ -790,4 +796,6 @@ public:
 	bool get_exception(uint64_t AL_index);
 
 	uint64_t get_AL_size();
+
+	unsigned int get_PL_index_from_AL_index(uint64_t AL_index);
 };

@@ -1,6 +1,6 @@
 #include "rep.h"
 #include <assert.h>
-
+#include <stdio.h>
 rep_node::rep_node(uint64_t num_counters){
     counters = new int[num_counters];
     for(int i=0; i<num_counters; i++){
@@ -9,7 +9,7 @@ rep_node::rep_node(uint64_t num_counters){
 }
 
 rep_set::rep_set(uint64_t num_counter, uint64_t assoc){
-    rep_nodes = new rep_node*[assoc];
+    rep_nodes = new rep_node*[assoc];    
     for(int i=0;i<assoc;i++)
     {
         rep_nodes[i] = new rep_node(num_counter);
@@ -21,7 +21,7 @@ uint64_t rep::increment_count(uint64_t cnt){
         return cnt;
     }
     else{
-        assert(cnt>SMITH_COUNTER_MAX && "Something wrong if count value is greater than 3!!");
+        assert(cnt<SMITH_COUNTER_MAX && "Something wrong if count value is greater than 3!!");
         return ++cnt;
     }
 }
@@ -30,14 +30,15 @@ uint64_t rep::decrement_count(uint64_t cnt){
         return cnt;
     }
     else{
-        assert(cnt>SMITH_COUNTER_MAX && "Something wrong if count value is less than 0!!");
+        assert(cnt<SMITH_COUNTER_MAX && "Something wrong if count value is less than 0!!");
         return --cnt;
     }
 }
 uint64_t rep::get_index(uint64_t pc, uint64_t bhr)
 {
     uint64_t index = (pc^bhr)>>2;       // PC[7:0] xor {GBH[2:5],0000 - Not adding the final zeroes for GBH XOR
-    return index % num_sets;
+    index = index % num_sets;
+    return index;
 }
 uint64_t rep::get_tag(uint64_t pc, uint64_t bhr, uint64_t value)
 {
@@ -56,6 +57,7 @@ rep::rep(uint64_t rep_size,uint64_t num_counter, uint64_t assoc){
     num_lines = rep_size/REP_NODE_SIZE;
     num_sets = num_lines/assoc;
     associativity = assoc;
+    num_counters = num_counter;
     //TODO do a sanity check to make sure the value in num_counter is a power of 2
     sets = new rep_set*[num_sets];
     for(int i=0; i< num_sets; i++){
@@ -64,11 +66,14 @@ rep::rep(uint64_t rep_size,uint64_t num_counter, uint64_t assoc){
 }
 
 bool rep::get_prediction(uint64_t pc, uint64_t bhr, uint64_t value, bool* prediction){
-    int64_t index = get_index(pc,bhr);
-    int64_t tag = get_tag(pc,bhr,value);
+    uint64_t index = get_index(pc,bhr);
+    uint64_t tag = get_tag(pc,bhr,value);
     rep_set* target_set = sets[index];
+    // printf("index: %" PRIu64"\n",index);
     bool is_found = false;
+    auto temp = target_set->rep_nodes[0]->is_valid ;
     for(int i=0; i< associativity; i++){
+        // printf("i: %d\n",i);
         if(target_set->rep_nodes[i]->is_valid && target_set->rep_nodes[i]->tag==tag){
             uint64_t selector = bhr & (num_counters-1);
             *prediction = (bool)parse_prediction(target_set->rep_nodes[i]->counters[selector]);
@@ -99,7 +104,7 @@ bool rep::prediction_feedback(bool actual_outcome, uint64_t pc, uint64_t bhr, ui
                             }
                         }
                     }
-                }                
+                }
             }
             if(rep_prediction==bp_prediction)
             {
@@ -120,7 +125,7 @@ bool rep::prediction_feedback(bool actual_outcome, uint64_t pc, uint64_t bhr, ui
             is_found = true;
         }
     }
-    assert(is_found && "If the feedback isnt't able to find the record then there is a problem with my understanding of the working of REP replacement");
+    // assert(is_found && "If the feedback isnt't able to find the record then there is a problem with my understanding of the working of REP replacement");
     if(!is_found){
         uint64_t target_way = 0;
         uint64_t curr_min_rcount = REPLACEMENT_MAX_COUNT +1;
@@ -135,6 +140,7 @@ bool rep::prediction_feedback(bool actual_outcome, uint64_t pc, uint64_t bhr, ui
                 target_way = i;            
             }
         }
+        // printf("Entry made in rep\n");
         uint64_t selector = bhr & (num_counters-1);
         target_set->rep_nodes[target_way]->counters[selector] = (uint64_t)actual_outcome+(uint64_t)1;
         target_set->rep_nodes[target_way]->is_valid = true;

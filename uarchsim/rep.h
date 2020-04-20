@@ -18,7 +18,7 @@ class rep_set{
     rep_set(uint64_t num_counter, uint64_t assoc);
 };
 class rep{
-    uint64_t num_counters;
+    uint64_t num_counters=4;
     rep_set** sets;
     uint64_t num_lines;
     uint64_t num_sets;

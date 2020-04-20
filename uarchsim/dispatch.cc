@@ -128,8 +128,9 @@ void pipeline_t::dispatch() {
       store_flag = IS_STORE(PAY.buf[index].flags);
       branch_flag = IS_BRANCH(PAY.buf[index].flags);
       amo_flag = IS_AMO(PAY.buf[index].flags);
-      csr_flag = IS_CSR(PAY.buf[index].flags);
-      PAY.buf[index].AL_index = REN->dispatch_inst(PAY.buf[index].C_valid,PAY.buf[index].C_log_reg,PAY.buf[index].C_phys_reg,load_flag,store_flag,branch_flag,amo_flag,csr_flag,PAY.buf[index].pc);
+      csr_flag = IS_CSR(PAY.buf[index].flags);      
+      // printf("While storing dispatch_inst PL_index: %u\n",index);
+      PAY.buf[index].AL_index = REN->dispatch_inst(PAY.buf[index].C_valid,PAY.buf[index].C_log_reg,PAY.buf[index].C_phys_reg,load_flag,store_flag,branch_flag,amo_flag,csr_flag,PAY.buf[index].pc,index);
 
 
       // FIX_ME #8

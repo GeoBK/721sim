@@ -43,11 +43,17 @@ void pipeline_t::decode() {
 		switch (inst.opcode()) {
 			case OP_JAL:
 			case OP_JALR:
+				PAY.buf[index].is_cond = false;
+				PAY.buf[index].checkpoint = true;
+				break;
+
 			case OP_BRANCH:
+				PAY.buf[index].is_cond = true;
 				PAY.buf[index].checkpoint = true;
 				break;
 
 			default:
+				PAY.buf[index].is_cond = false;
 				PAY.buf[index].checkpoint = false;
 				break;
 		}

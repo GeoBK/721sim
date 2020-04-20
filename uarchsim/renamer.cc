@@ -184,8 +184,9 @@ uint64_t renamer::dispatch_inst(bool dest_valid,
 	                       bool branch,
 	                       bool amo,
 	                       bool csr,
-	                       uint64_t PC)
-{
+	                       uint64_t PC,
+                           unsigned int PL_index)
+{    
     assert(!activelist->is_full() &&"Active list is full, user must check active list before calling dispatch");    
     // printf("Entering dispatch_instr\n");
     ALEntry rec;
@@ -206,6 +207,7 @@ uint64_t renamer::dispatch_inst(bool dest_valid,
     rec.has_load_violation=false;
     rec.is_branch_mispredict=false;
     rec.is_value_mispredict=false;
+    rec.PL_index = PL_index;
     // printf("Done with instruction dispatch!!\n");
     return activelist->insert(rec);     
 }
@@ -326,7 +328,7 @@ void renamer::commit()
     ALEntry rec = activelist->pop();
     if(rec.pc==0)
     {
-        printf("rec: %"PRIu64"\n",rec.pc);        
+        printf("rec: %" PRIu64"\n",rec.pc);        
     }
     
     assert(rec.is_completed && !rec.has_exception && !rec.has_load_violation);
@@ -378,4 +380,9 @@ void renamer::set_value_misprediction(uint64_t AL_index)
 bool renamer::get_exception(uint64_t AL_index)
 {
     activelist->get_exception(AL_index);
+}
+
+unsigned int renamer::get_PL_index_from_AL_index(uint64_t AL_index)
+{
+    activelist->get_PL_index(AL_index);
 }
