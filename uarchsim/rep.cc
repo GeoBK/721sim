@@ -21,7 +21,7 @@ uint64_t rep::increment_count(uint64_t cnt){
         return cnt;
     }
     else{
-        assert(cnt<SMITH_COUNTER_MAX && "Something wrong if count value is greater than 3!!");
+        assert(cnt<=SMITH_COUNTER_MAX && "Something wrong if count value is greater than 3!!");
         return ++cnt;
     }
 }
@@ -30,7 +30,7 @@ uint64_t rep::decrement_count(uint64_t cnt){
         return cnt;
     }
     else{
-        assert(cnt<SMITH_COUNTER_MAX && "Something wrong if count value is less than 0!!");
+        assert(cnt<=SMITH_COUNTER_MAX && "Something wrong if count value is less than 0!!");
         return --cnt;
     }
 }

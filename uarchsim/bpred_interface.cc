@@ -299,7 +299,7 @@ void bpred_interface::make_predictions(unsigned int branch_history, vht* _vht, r
 
 			if(vht_hit && rep_hit)
 			{
-				printf("VHT_hit && REP_hit");	   
+				// printf("VHT_hit && REP_hit");	   
 				cti_Q[cti_tail].taken = prediction;
 				cti_Q[cti_tail].back_pred = pred_table[pred_index].pred;
 			}
