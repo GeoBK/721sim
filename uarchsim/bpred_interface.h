@@ -167,7 +167,7 @@ private:
 	void RAS_update();
 	bool RAS_lookup(uint32_t* target);
 	void update_predictions(bool fm);				// "FM"
-	void make_predictions(unsigned int branch_history,vht* _vht, rep* _re);
+	void make_predictions(unsigned int branch_history,vht* _vht, rep* _rep);
 	void decode();
 
 
