@@ -92,11 +92,7 @@ void pipeline_t::writeback(unsigned int lane_number) {
             uint64_t dummy_bhr = 0xFFFFFFFFFFFFFFFF;            
                      
             bool actual_outcome;
-<<<<<<< HEAD
             if(PAY.buf[index].c_next_pc == (PAY.buf[index].pc + insn_size))
-=======
-            if(PAY.buf[index].c_next_pc = (PAY.buf[index].pc + 4))
->>>>>>> 49c454788439a5af0775563bf4ff331022f2d76b
             {
                actual_outcome = false; //Not taken
             }
