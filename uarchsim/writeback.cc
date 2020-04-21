@@ -94,7 +94,7 @@ void pipeline_t::writeback(unsigned int lane_number) {
             int32_t diff;
             bool prediction;
             bool actual_outcome;
-            if(PAY.buf[index].next_pc = (PAY.buf[index].pc + 4))
+            if(PAY.buf[index].c_next_pc = (PAY.buf[index].pc + 4))
             {
                actual_outcome = false; //Not taken
             }
@@ -149,7 +149,7 @@ void pipeline_t::writeback(unsigned int lane_number) {
             }
             // count has to be decremented by the number of branches squashed
             bool actual_outcome;
-            if(PAY.buf[index].next_pc == (PAY.buf[index].pc + 4))
+            if(PAY.buf[index].c_next_pc == (PAY.buf[index].pc + 4))
             {
                actual_outcome = false;
             }
