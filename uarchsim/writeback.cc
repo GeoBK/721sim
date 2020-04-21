@@ -92,7 +92,11 @@ void pipeline_t::writeback(unsigned int lane_number) {
             uint64_t dummy_bhr = 0xFFFFFFFFFFFFFFFF;            
                      
             bool actual_outcome;
+<<<<<<< HEAD
             if(PAY.buf[index].c_next_pc == (PAY.buf[index].pc + insn_size))
+=======
+            if(PAY.buf[index].c_next_pc = (PAY.buf[index].pc + 4))
+>>>>>>> 49c454788439a5af0775563bf4ff331022f2d76b
             {
                actual_outcome = false; //Not taken
             }
@@ -150,6 +154,7 @@ void pipeline_t::writeback(unsigned int lane_number) {
             _vht->update_branch_difference(PAY.buf[index].pc,PAY.buf[index].bhr, diff);
             // count has to be decremented by the number of branches squashed
             bool actual_outcome;
+
             if(PAY.buf[index].c_next_pc == (PAY.buf[index].pc + insn_size))
             {
                actual_outcome = false;
