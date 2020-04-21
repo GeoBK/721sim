@@ -89,12 +89,10 @@ void pipeline_t::writeback(unsigned int lane_number) {
             resolve(PAY.buf[index].branch_ID, true);
 
             //////////////////VHT and REP////////////////////
-            uint64_t dummy_bhr = 0xFFFFFFFFFFFFFFFF;
-            uint64_t value;
-            int32_t diff;
-            bool prediction;
+            uint64_t dummy_bhr = 0xFFFFFFFFFFFFFFFF;            
+                     
             bool actual_outcome;
-            if(PAY.buf[index].next_pc = (PAY.buf[index].pc + 4))
+            if(PAY.buf[index].c_next_pc == (PAY.buf[index].pc + insn_size))
             {
                actual_outcome = false; //Not taken
             }
@@ -104,32 +102,33 @@ void pipeline_t::writeback(unsigned int lane_number) {
             }
             
          
-            diff = PAY.buf[index].A_log_reg - PAY.buf[index].B_log_reg;
-            // Assumption : Not checking for VHT hit as BCT will have the information for all the outstanding branches
-               bool vht_hit = _vht->get_value(PAY.buf[index].pc,PAY.buf[index].bhr,&value);
-               //return diff from get_bvalue functionb to be used in update difference
-               bool rep_hit = _rep->get_prediction(PAY.buf[index].pc,PAY.buf[index].bhr,value,&prediction);
-               if(PAY.buf[index].is_cond)
-               {
-                  _vht->decrement_os_branch_count(PAY.buf[index].pc,PAY.buf[index].bhr);
-               }                  
-               _vht->update_branch_difference(PAY.buf[index].pc,PAY.buf[index].bhr, diff);
-               // Bp_prediction need to be stored along with REP prediction	
-               if(rep_hit)
-               {
-                  _rep->prediction_feedback( actual_outcome, PAY.buf[index].pc, PAY.buf[index].bhr, value, PAY.buf[index].back_pred, prediction);
-               }
+            int32_t diff = REN->read(PAY.buf[index].A_phys_reg) - REN->read(PAY.buf[index].B_phys_reg);
+
+            // I dont think this is the value we need to be getting. The REP needs to be trained with the values from the IF stage.
+            // // Assumption : Not checking for VHT hit as BCT will have the information for all the outstanding branches
+            // bool vht_hit = _vht->get_value(PAY.buf[index].pc,PAY.buf[index].bhr,&value);
+            // //return diff from get_bvalue functionb to be used in update difference
+            // bool rep_hit = _rep->get_prediction(PAY.buf[index].pc,PAY.buf[index].bhr,value,&prediction);
+
+            if(PAY.buf[index].is_cond)
+            {
+               _vht->decrement_os_branch_count(PAY.buf[index].pc,PAY.buf[index].bhr);
+            }                  
+            _vht->update_branch_difference(PAY.buf[index].pc,PAY.buf[index].bhr, diff);
+            // Bp_prediction need to be stored along with REP prediction	
+            BP.set_rep_hit(PAY.buf[index].pred_tag, PAY.buf[index].rep_hit);
+            if(PAY.buf[index].vht_hit && PAY.buf[index].rep_hit)
+            {
+               _rep->prediction_feedback( actual_outcome, PAY.buf[index].pc, PAY.buf[index].bhr, PAY.buf[index].vht_value, PAY.buf[index].back_pred, PAY.buf[index].rep_pred);
+            }
                
          }
          else {
             // Branch was mispredicted.
             //////// VHT and REP ////////////////
            
-            uint64_t dummy_bhr = 0xFFFFFFFFFFFFFFFF;
-            uint64_t value;
-            bool prediction;
-            bool vht_hit = _vht->get_value(PAY.buf[index].pc,PAY.buf[index].bhr,&value);
-            bool rep_hit = _rep->get_prediction(PAY.buf[index].pc,PAY.buf[index].bhr,value,&prediction);
+            uint64_t dummy_bhr = 0xFFFFFFFFFFFFFFFF;            
+            
              //uint64_t ALtail = REN->AL_tail();
             uint64_t misp_tail = REN->AL_tail();
             // printf("misp_tail: %" PRIu64"\n", misp_tail);
@@ -147,9 +146,11 @@ void pipeline_t::writeback(unsigned int lane_number) {
                   _vht->decrement_os_branch_count(PAY.buf[PL_index].pc,PAY.buf[PL_index].bhr);
                }                        
             }
+            int32_t diff = REN->read(PAY.buf[index].A_phys_reg) - REN->read(PAY.buf[index].B_phys_reg);
+            _vht->update_branch_difference(PAY.buf[index].pc,PAY.buf[index].bhr, diff);
             // count has to be decremented by the number of branches squashed
             bool actual_outcome;
-            if(PAY.buf[index].next_pc == (PAY.buf[index].pc + 4))
+            if(PAY.buf[index].c_next_pc == (PAY.buf[index].pc + insn_size))
             {
                actual_outcome = false;
             }
@@ -157,15 +158,17 @@ void pipeline_t::writeback(unsigned int lane_number) {
             {
                actual_outcome = true;
             }
-            
-            _rep->prediction_feedback( actual_outcome, PAY.buf[index].pc, PAY.buf[index].bhr, value, PAY.buf[index].back_pred, prediction);
+            if(PAY.buf[index].vht_hit)
+            {
+               _rep->prediction_feedback( actual_outcome, PAY.buf[index].pc, PAY.buf[index].bhr, PAY.buf[index].vht_value, PAY.buf[index].back_pred, PAY.buf[index].rep_pred);
+            }            
             
             
             // Roll-back the fetch unit: PC and branch predictor.
            //if(vht_hit && !rep_hit)
             // {
             pc = PAY.buf[index].c_next_pc;					// PC gets the correct target of the resolved branch.
-            BP.fix_pred(PAY.buf[index].pred_tag, PAY.buf[index].c_next_pc);	// Roll-back the branch predictor to the point of the resolved branch.
+            BP.fix_pred(PAY.buf[index].pred_tag, PAY.buf[index].c_next_pc, PAY.buf[index].rep_hit);	// Roll-back the branch predictor to the point of the resolved branch.
            //  }
             // Clear the fetch unit's exception, amo, and csr flags.  The fetch unit stalls on these conditions.
             // Therefore, we can infer that the mispredicted branch is logically before any offending instruction,

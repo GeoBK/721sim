@@ -49,7 +49,7 @@ bool bdc::update_difference(uint64_t pc, uint64_t bhr, int32_t diff){
             target_set->diffs[i].timestamp = update_count++;
         }
     }
-    uint64_t min_time=0;
+    uint64_t min_time=target_set->diffs[0].timestamp;
     int target_way = 0;
     if(!is_found){
         for(int i=0;i<associativity;i++){
@@ -57,9 +57,10 @@ bool bdc::update_difference(uint64_t pc, uint64_t bhr, int32_t diff){
                 target_way = i;
                 break;
             }
-            if(target_set->diffs[i].is_valid && target_set->diffs[i].timestamp>min_time)
+            if(target_set->diffs[i].is_valid && target_set->diffs[i].timestamp<min_time)
             {
-                target_way = i;                
+                target_way = i;
+                min_time = target_set->diffs[i].timestamp;
             }
         }
         target_set->diffs[target_way].is_valid=true;

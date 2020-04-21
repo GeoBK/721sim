@@ -216,7 +216,10 @@ void bpred_interface::update_predictions(bool fm)		// "FM"
 	{
 		pred_index = ((cti_Q[cti_head].history & HIST_MASK) ^
 		              ((cti_Q[cti_head].pc / insn_size) & PC_MASK)) & BP_INDEX_MASK;
-		pred_table[pred_index].update((uint32_t)cti_Q[cti_head].taken);
+		if(!cti_Q[cti_head].rep_hit)
+		{
+			pred_table[pred_index].update((uint32_t)cti_Q[cti_head].taken);
+		}
 
 		//
 		// update conf
@@ -232,19 +235,18 @@ void bpred_interface::update_predictions(bool fm)		// "FM"
 		conf_index = ((history & HIST_MASK) ^
 		              ((cti_Q[cti_head].pc / insn_size) & PC_MASK)) & BP_INDEX_MASK;
 		bool corr = (cti_Q[cti_head].target == cti_Q[cti_head].original_pred);
-
-		conf_table[conf_index].conf_update((uint32_t)corr, CONF_RESET, CONF_MAX);
-
-		//
-		// "FM": update conf
-		//
-		fm_table[pred_index].conf_update((uint32_t)!fm, FM_RESET, FM_MAX);
-
-    inc_counter(bp_write_count);
+		if(!cti_Q[cti_head].rep_hit)
+		{
+			conf_table[conf_index].conf_update((uint32_t)corr, CONF_RESET, CONF_MAX);
+			//
+			// "FM": update conf
+			//
+			fm_table[pred_index].conf_update((uint32_t)!fm, FM_RESET, FM_MAX);
+		}
+    	inc_counter(bp_write_count);
 
 	}
-
-  inc_counter(ctiq_read_count);
+  	inc_counter(ctiq_read_count);
 
 	//
 	// update BTB
@@ -253,13 +255,12 @@ void bpred_interface::update_predictions(bool fm)		// "FM"
 	{
 		btb_index = (cti_Q[cti_head].pc / insn_size) & BTB_MASK;
 		BTB[btb_index].update(cti_Q[cti_head].target);
-
-    inc_counter(btb_write_count);
+    	inc_counter(btb_write_count);
 	}
 
 }
 
-void bpred_interface::make_predictions(unsigned int branch_history, vht* _vht, rep* _rep)
+void bpred_interface::make_predictions(unsigned int branch_history, vht* _vht, rep* _rep, bool* vht_hit, uint64_t* vht_value, bool* rep_prediction, bool* rep_hit)
 {
 	uint32_t	conf_index;
 	uint32_t	pred_index;
@@ -269,8 +270,8 @@ void bpred_interface::make_predictions(unsigned int branch_history, vht* _vht, r
 	uint64_t 	value;
 	uint64_t 	br_history;
 	bool 		prediction;
-	bool 		vht_hit;
-	bool 		rep_hit;
+	*vht_hit = false;
+	*rep_hit = false;
 
 	//
 	// Predict if cti is "taken"
@@ -287,44 +288,41 @@ void bpred_interface::make_predictions(unsigned int branch_history, vht* _vht, r
 			pred_index = ((history & HIST_MASK) ^
 							((cti_Q[cti_tail].pc / insn_size) & PC_MASK)) & BP_INDEX_MASK;
 
-			vht_hit = _vht->get_value(cti_Q[cti_tail].pc,history,&value);
-			rep_hit = _rep->get_prediction(cti_Q[cti_tail].pc,history,value,&prediction);
-			
-
-			//if(vht_hit)
-			//{
-			_vht->increment_os_branch_count(cti_Q[cti_tail].pc,history);
-			//}
-
-
-			if(vht_hit && rep_hit)
+			*vht_hit = _vht->get_value(cti_Q[cti_tail].pc,history,vht_value);
+			if(*vht_hit)
 			{
-				// printf("VHT_hit && REP_hit");	   
-				cti_Q[cti_tail].taken = prediction;
-				cti_Q[cti_tail].back_pred = pred_table[pred_index].pred;
+				*rep_hit = _rep->get_prediction(cti_Q[cti_tail].pc,history,*vht_value,&prediction);
+			}
+			_vht->increment_os_branch_count(cti_Q[cti_tail].pc,history);
+
+			if(*vht_hit && *rep_hit)
+			{					   
+				cti_Q[cti_tail].taken = prediction;	
+				*rep_prediction = prediction;
 			}
 			else
 			{
-				cti_Q[cti_tail].taken = pred_table[pred_index].pred;
-				cti_Q[cti_tail].back_pred = pred_table[pred_index].pred;
+				cti_Q[cti_tail].taken = pred_table[pred_index].pred;				
 			}
+			//Used later to train the rep
+			cti_Q[cti_tail].back_pred = pred_table[pred_index].pred;			
 		}
-
 		else	
-			{
-				printf("Branch_HIstory not xFFFFFFF");
+		{			
 			history = branch_history;
 			pred_index = ((branch_history & HIST_MASK) ^
 			              ((cti_Q[cti_tail].pc / insn_size) & PC_MASK)) & BP_INDEX_MASK;
 			cti_Q[cti_tail].use_global_history = true;
 			cti_Q[cti_tail].global_history = branch_history;
-			}	
+		}	
     	
 
-		if (cti_Q[cti_tail].taken) {
+		if (cti_Q[cti_tail].taken) 
+		{
 			history = (history >> 1) | HIST_BIT;
 		}
-		else {
+		else 
+		{
 			history = (history >> 1);
 		}
 
@@ -457,7 +455,7 @@ void bpred_interface::decode()
 //
 unsigned int bpred_interface::get_pred(unsigned int branch_history,
                                        unsigned int PC, insn_t inst,
-                                       unsigned int comp_target, unsigned int* pred_tag,vht* _vht, rep* _rep)
+                                       unsigned int comp_target, unsigned int* pred_tag,vht* _vht, rep* _rep, bool* vht_hit, uint64_t* vht_value, bool* rep_prediction, bool* rep_hit)
 {
 
 	unsigned int tag;
@@ -475,7 +473,7 @@ unsigned int bpred_interface::get_pred(unsigned int branch_history,
 	cti_Q[cti_tail].use_global_history = false;
 
 	decode();
-	make_predictions(branch_history, _vht, _rep);
+	make_predictions(branch_history, _vht, _rep,vht_hit,vht_value,rep_prediction,rep_hit);
 	cti_Q[cti_tail].original_pred = cti_Q[cti_tail].target;
 	update();
 
@@ -487,11 +485,10 @@ unsigned int bpred_interface::get_pred(unsigned int branch_history,
                                        unsigned int PC, insn_t inst,
                                        unsigned int comp_target, unsigned int* pred_tag,
                                        bool* conf,
-                                       bool* fm, uint64_t* bhr, bool* back_pred,vht* _vht, rep* _rep)				// "FM"
+                                       bool* fm, uint64_t* bhr, bool* back_pred,vht* _vht, rep* _rep, bool* vht_hit, uint64_t* vht_value, bool* rep_prediction, bool* rep_hit)				// "FM"
 {
 
-	unsigned int tag;
-
+	unsigned int tag;	
 	tag = cti_tail;
 	*bhr = cti_Q[cti_tail].history;
 	*back_pred = cti_Q[cti_tail].back_pred;
@@ -506,7 +503,7 @@ unsigned int bpred_interface::get_pred(unsigned int branch_history,
 	cti_Q[cti_tail].use_global_history = false;
 
 	decode();
-	make_predictions(branch_history, _vht, _rep);
+	make_predictions(branch_history, _vht, _rep,vht_hit,vht_value,rep_prediction,rep_hit);
 
 	cti_Q[cti_tail].original_pred = cti_Q[cti_tail].target;
 	if (cti_Q[cti_tail].conf > CONF_THRESHOLD) {
@@ -545,12 +542,12 @@ void bpred_interface::set_nconf(unsigned int pred_tag)
 //
 // The prediction is identified via a tag, originally gotten from get_pred.
 //
-void bpred_interface::fix_pred(unsigned int pred_tag, unsigned int next_pc)
+void bpred_interface::fix_pred(unsigned int pred_tag, unsigned int next_pc, bool rep_hit)
 {
 	uint32_t temp_target;
 
 	cti_tail = pred_tag;
-
+	cti_Q[cti_tail].rep_hit = rep_hit;
 	if (cti_Q[cti_tail].is_cond)
 	{
 		bool taken;
@@ -712,4 +709,9 @@ unsigned int bpred_interface::update_global_history(unsigned int ghistory,
 			return (ghistory);
 			break;
 	}
+}
+
+void bpred_interface::set_rep_hit(unsigned int pred_tag, bool rep_hit)
+{
+	cti_Q[pred_tag].rep_hit = rep_hit;
 }

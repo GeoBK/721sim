@@ -62,7 +62,10 @@ typedef struct {
    ////////REP and VHT///////////
    uint64_t bhr;
    bool back_pred;
-
+   bool vht_hit;
+   uint64_t vht_value;
+   bool rep_pred;
+   bool rep_hit;
    ////////////////////////
    // Set by Decode Stage.
    ////////////////////////

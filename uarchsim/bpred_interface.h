@@ -145,6 +145,8 @@ public:
 
 	bool			use_global_history;
 	uint32_t			global_history;
+
+	bool rep_hit=false;
 };
 //-------------------------------------------------------------------
 //-------------------------------------------------------------------
@@ -167,7 +169,7 @@ private:
 	void RAS_update();
 	bool RAS_lookup(uint32_t* target);
 	void update_predictions(bool fm);				// "FM"
-	void make_predictions(unsigned int branch_history,vht* _vht, rep* _rep);
+	void make_predictions(unsigned int branch_history,vht* _vht, rep* _rep, bool* vht_hit, uint64_t* vht_value, bool* rep_prediction, bool* rep_hit);
 	void decode();
 
 
@@ -245,12 +247,12 @@ public:
 	//
 	unsigned int get_pred(unsigned int branch_history,
 	                      unsigned int PC, insn_t inst,
-	                      unsigned int comp_target, unsigned int* pred_tag,vht* _vht, rep* _rep);
+	                      unsigned int comp_target, unsigned int* pred_tag,vht* _vht, rep* _rep, bool* vht_hit, uint64_t* vht_value, bool* rep_prediction, bool* rep_hit);
 	unsigned int get_pred(unsigned int branch_history,
 	                      unsigned int PC, insn_t inst,
 	                      unsigned int comp_target, unsigned int* pred_tag,
 	                      bool* conf,
-	                      bool* fm, uint64_t* bhr, bool* back_pred,vht* _vht, rep* _rep);	// "FM"
+	                      bool* fm, uint64_t* bhr, bool* back_pred,vht* _vht, rep* _rep, bool* vht_hit, uint64_t* vht_value, bool* rep_prediction, bool* rep_hit);	// "FM"
 
 	void set_nconf(unsigned int pred_tag);
 	//
@@ -262,7 +264,7 @@ public:
 	//
 	// The prediction is identified via a tag, originally gotten from get_pred.
 	//
-	void fix_pred(unsigned int pred_tag, unsigned int next_pc);
+	void fix_pred(unsigned int pred_tag, unsigned int next_pc, bool rep_hit);
 
 	//
 	//      verify_pred()
@@ -292,6 +294,8 @@ public:
 	unsigned int update_global_history(unsigned int ghistory,
 	                                   insn_t inst, unsigned int pc,
 	                                   unsigned int next_pc);
+
+	void set_rep_hit(unsigned int pred_tag, bool rep_hit);
 
 }; // end of bpred_interface class definition
 

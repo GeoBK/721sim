@@ -70,14 +70,14 @@ bool rep::get_prediction(uint64_t pc, uint64_t bhr, uint64_t value, bool* predic
     uint64_t tag = get_tag(pc,bhr,value);
     rep_set* target_set = sets[index];
     // printf("index: %" PRIu64"\n",index);
-    bool is_found = false;
-    auto temp = target_set->rep_nodes[0]->is_valid ;
+    bool is_found = false;    
     for(int i=0; i< associativity; i++){
         // printf("i: %d\n",i);
         if(target_set->rep_nodes[i]->is_valid && target_set->rep_nodes[i]->tag==tag){
             uint64_t selector = bhr & (num_counters-1);
             *prediction = (bool)parse_prediction(target_set->rep_nodes[i]->counters[selector]);
             is_found = true;
+            break;
         }
     }
     return is_found;
@@ -137,7 +137,8 @@ bool rep::prediction_feedback(bool actual_outcome, uint64_t pc, uint64_t bhr, ui
                 break;            
             }
             if(target_set->rep_nodes[i]->is_valid && target_set->rep_nodes[i]->replacement_counter<curr_min_rcount){
-                target_way = i;            
+                target_way = i;
+                curr_min_rcount=target_set->rep_nodes[i]->replacement_counter;
             }
         }
         // printf("Entry made in rep\n");

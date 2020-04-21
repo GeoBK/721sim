@@ -4,7 +4,7 @@ class bdc_node{
     public:
     uint64_t    tag=0;
     int32_t     diff=0;
-    bool        is_valid=0;
+    bool        is_valid= false;
     uint64_t    timestamp;
 };
 class set{
