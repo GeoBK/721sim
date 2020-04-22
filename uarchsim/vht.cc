@@ -14,7 +14,8 @@ bool vht::get_value(uint64_t pc, uint64_t bhr, uint64_t* value)
     int diff;
     bool hit = _bdc->get_difference(pc, bhr, &diff);
     uint64_t count = _bct->get_count(pc,bhr);
-    *value = diff^count;
+   *value = (diff<<32)|count;
+//*value = diff^count;
     return hit;
 
 }
