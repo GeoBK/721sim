@@ -134,7 +134,7 @@ void pipeline_t::dispatch() {
       // printf("While storing dispatch_inst PL_index: %u\n",index);
       PAY.buf[index].AL_index = REN->dispatch_inst(PAY.buf[index].C_valid,PAY.buf[index].C_log_reg,PAY.buf[index].C_phys_reg,load_flag,store_flag,branch_flag,amo_flag,csr_flag,PAY.buf[index].pc,index);
       
-      if(PAY.buf[index].is_cond)
+      if(PAY.buf[index].is_cond && !PERFECT_BRANCH_PRED)
       {
          assert(!os_branches_not_in_active_list.empty() && "Outstanding branches should not be empty!");
          delete os_branches_not_in_active_list.back();
