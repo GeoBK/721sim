@@ -1,5 +1,5 @@
 #include <cinttypes>
-#define BCT_MAX_COUNT 0xf       //Keeping a 4 bit counter for now
+#define BCT_MAX_COUNT 0xff       //Keeping a 4 bit counter for now
 class bct{
     int* counters;
     uint64_t get_index(uint64_t pc);

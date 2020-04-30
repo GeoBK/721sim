@@ -2,7 +2,8 @@
 #include "trap.h"
 #include "mmu.h"
 
-
+int diff_not_0_count =0;
+int diff_0_count = 0;
 void pipeline_t::retire(size_t& instret) {
    // printf("Inside retire\n!");
    bool head_valid;
@@ -86,7 +87,44 @@ void pipeline_t::retire(size_t& instret) {
          // FIX_ME #17b
 	 // Commit the instruction at the head of the active list.
 	 //
+      int32_t diff = REN->read(PAY.buf[PAY.head].A_phys_reg) - REN->read(PAY.buf[PAY.head].B_phys_reg);
       REN->commit();
+      
+      // if(PAY.buf[PAY.head].pc==0x10904)
+      // {
+      //    printf("committed diff: %d\n",diff);
+      // }      
+      if(PAY.buf[PAY.head].checkpoint)
+      {
+         bool actual_outcome;
+         if(PAY.buf[PAY.head].c_next_pc == (PAY.buf[PAY.head].pc + insn_size))
+         {
+            actual_outcome = false; //Not taken
+         }
+         else
+         {
+            actual_outcome = true; //Taken
+         }
+         if(PAY.buf[PAY.head].is_cond)
+         {
+            _vht->decrement_os_branch_count(PAY.buf[PAY.head].pc,PAY.buf[PAY.head].bhr);
+         }
+         _vht->update_branch_difference(PAY.buf[PAY.head].pc,PAY.buf[PAY.head].bhr, diff);
+         
+         if(PAY.buf[PAY.head].next_pc != PAY.buf[PAY.head].c_next_pc){            
+            if(PAY.buf[PAY.head].pc==0x10904 && diff!=0)
+            {
+               printf("diff_not_0_count: %d\n", diff_not_0_count++);   
+               printf("PAY.buf[index].vht_value: %llx, diff=%d:, rep_pred: %d, actual_outcome: %d\n",PAY.buf[PAY.head].vht_value, diff,PAY.buf[PAY.head].rep_pred,actual_outcome);
+            }
+            if(PAY.buf[PAY.head].pc==0x10904 && diff==0)
+            {            
+               printf("diff_0_count: %d\n", diff_0_count++);   
+               printf("PAY.buf[index].vht_value: %llx, diff=%d:, rep_pred: %d, actual_outcome: %d\n",PAY.buf[PAY.head].vht_value, diff,PAY.buf[PAY.head].rep_pred,actual_outcome);
+            }     
+         }                  
+      }
+      
 
 
          // If the committed instruction is a branch, signal the branch predictor to commit its oldest branch.

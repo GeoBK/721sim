@@ -1,5 +1,7 @@
 #include "pipeline.h"
-
+#include <list>
+#include <utility>
+extern std::list<std::pair<uint32_t,uint32_t>*> os_branches_not_in_active_list;
 
 void pipeline_t::writeback(unsigned int lane_number) {
    // printf("Inside writeback!\n");
@@ -99,24 +101,26 @@ void pipeline_t::writeback(unsigned int lane_number) {
             else
             {
                actual_outcome = true; //Taken
-            }
-            
-         
-            int32_t diff = REN->read(PAY.buf[index].A_phys_reg) - REN->read(PAY.buf[index].B_phys_reg);
-
+            }    
             // I dont think this is the value we need to be getting. The REP needs to be trained with the values from the IF stage.
             // // Assumption : Not checking for VHT hit as BCT will have the information for all the outstanding branches
             // bool vht_hit = _vht->get_value(PAY.buf[index].pc,PAY.buf[index].bhr,&value);
             // //return diff from get_bvalue functionb to be used in update difference
             // bool rep_hit = _rep->get_prediction(PAY.buf[index].pc,PAY.buf[index].bhr,value,&prediction);
 
-            if(PAY.buf[index].is_cond)
-            {
-               _vht->decrement_os_branch_count(PAY.buf[index].pc,PAY.buf[index].bhr);
-            }                  
-            _vht->update_branch_difference(PAY.buf[index].pc,PAY.buf[index].bhr, diff);
+            // if(PAY.buf[index].is_cond)
+            // {
+            //    _vht->decrement_os_branch_count(PAY.buf[index].pc,PAY.buf[index].bhr);
+            // } 
+                        
+            // _vht->update_branch_difference(PAY.buf[index].pc,PAY.buf[index].bhr, diff);
             // Bp_prediction need to be stored along with REP prediction	
             BP.set_rep_hit(PAY.buf[index].pred_tag, PAY.buf[index].rep_hit);
+            // if(PAY.buf[index].pc==0x10904 && diff==-1)
+            // {
+            //    printf("PAY.buf[index].vht_value for diff=-1: %d, rep_pred: %d\n",PAY.buf[index].vht_value,PAY.buf[index].rep_pred);
+            // }
+                     
             if(PAY.buf[index].vht_hit && PAY.buf[index].rep_hit)
             {
                _rep->prediction_feedback( actual_outcome, PAY.buf[index].pc, PAY.buf[index].bhr, PAY.buf[index].vht_value, PAY.buf[index].back_pred, PAY.buf[index].rep_pred);
@@ -131,23 +135,34 @@ void pipeline_t::writeback(unsigned int lane_number) {
             
              //uint64_t ALtail = REN->AL_tail();
             uint64_t misp_tail = REN->AL_tail();
+            if(misp_tail==0)misp_tail=REN->get_AL_size();               
+            misp_tail--;
             // printf("misp_tail: %" PRIu64"\n", misp_tail);
             // printf("Current instruction's AL_index: %" PRIu64"\n", PAY.buf[index].AL_index);
             while(misp_tail!=PAY.buf[index].AL_index)
-            {
-               if(misp_tail==0)misp_tail=REN->get_AL_size();               
-               misp_tail--;
+            {               
                // printf("misp_tail: %" PRIu64"\n", misp_tail);
                unsigned PL_index = REN->get_PL_index_from_AL_index(misp_tail);
                // printf("PL_index: %u\n",PL_index);               
-               if(PAY.buf[PL_index].checkpoint && PAY.buf[PL_index].is_cond)
+               if( PAY.buf[PL_index].is_cond)
                {
                   // printf("Decremented os count after branch mispred\n");
                   _vht->decrement_os_branch_count(PAY.buf[PL_index].pc,PAY.buf[PL_index].bhr);
-               }                        
+               }
+               if(misp_tail==0)misp_tail=REN->get_AL_size();               
+               misp_tail--;                        
             }
-            int32_t diff = REN->read(PAY.buf[index].A_phys_reg) - REN->read(PAY.buf[index].B_phys_reg);
-            _vht->update_branch_difference(PAY.buf[index].pc,PAY.buf[index].bhr, diff);
+            while (!os_branches_not_in_active_list.empty())
+            {
+               std::pair<uint32_t,uint32_t>* pc_bhr = os_branches_not_in_active_list.front();
+               os_branches_not_in_active_list.pop_front();
+               _vht->decrement_os_branch_count((*pc_bhr).first, (*pc_bhr).second);
+               delete pc_bhr;
+            }
+            // if(PAY.buf[index].pc==0x10904)
+            // {
+            //    printf("Squash decrement BCT count: %" PRIu64"\n",_vht->get_os_branch_count(PAY.buf[index].pc,PAY.buf[index].bhr));
+            // } 
             // count has to be decremented by the number of branches squashed
             bool actual_outcome;
 
@@ -227,6 +242,7 @@ void pipeline_t::writeback(unsigned int lane_number) {
       // 2. Set the completed bit for this instruction in the Active List.
       //////////////////////////////////////////////////////////////////////////////////////////////////////////
       REN->set_complete(PAY.buf[index].AL_index);
+      // printf("Set complete called in WB for index: %u\n", PAY.buf[index].AL_index);
       // printf("Set complete called in writeback\n");
 
 

@@ -4,6 +4,7 @@
 #define REPLACEMENT_MAX_COUNT 0x3f
 #define SMITH_COUNTER_MAX 0x3
 #define REP_NODE_SIZE 3
+#define FLUSH_INTERVAL 1000
 class rep_node{
     public:
     uint64_t replacement_counter=0;       //should be a 6 bit counter to enable the replacement strategy
@@ -19,6 +20,7 @@ class rep_set{
 };
 class rep{
     uint64_t num_counters=4;
+    uint64_t flush_counter=FLUSH_INTERVAL;
     rep_set** sets;
     uint64_t num_lines;
     uint64_t num_sets;
@@ -28,6 +30,7 @@ class rep{
     uint64_t get_index(uint64_t pc, uint64_t bhr);
     uint64_t get_tag(uint64_t pc, uint64_t bhr, uint64_t value);
     uint64_t parse_prediction(uint64_t smith_counter);
+    void flush_replacement_counters();
     public:
     rep(uint64_t rep_size,uint64_t num_counter, uint64_t assoc);
     bool get_prediction(uint64_t pc, uint64_t bhr, uint64_t value, bool* prediction);

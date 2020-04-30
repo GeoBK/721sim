@@ -12,5 +12,6 @@ class vht{
     bool increment_os_branch_count(uint64_t pc, uint64_t bhr);
     bool decrement_os_branch_count(uint64_t pc, uint64_t bhr);
     bool update_branch_difference(uint64_t pc, uint64_t bhr, int32_t diff);    
+    uint64_t get_os_branch_count(uint64_t pc, uint64_t bhr);
 };
 #endif //VHT_H

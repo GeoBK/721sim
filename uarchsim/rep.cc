@@ -43,10 +43,13 @@ uint64_t rep::get_index(uint64_t pc, uint64_t bhr)
 uint64_t rep::get_tag(uint64_t pc, uint64_t bhr, uint64_t value)
 {
     //Tag = {000, PC[14:8]}   ^   {GBH[6:9],000000}   ^   {BDT, BCT}
-    uint64_t shifted_pc = pc/num_sets;
-    uint64_t mask = 0xffffffffffffff00;
-    uint64_t padded_gbh = bhr&mask;
-    return shifted_pc^padded_gbh^value;
+    // uint64_t shifted_pc = pc/num_sets;
+    // uint64_t mask = 0xffffffffffffff00;
+    // uint64_t padded_gbh = bhr&mask;
+    // return shifted_pc^padded_gbh^value;
+
+    return (pc<<16)|value;
+
 }
 
 uint64_t rep::parse_prediction(uint64_t smith_counter){
@@ -83,8 +86,24 @@ bool rep::get_prediction(uint64_t pc, uint64_t bhr, uint64_t value, bool* predic
     return is_found;
 }
 
+void rep::flush_replacement_counters()
+{
+    for(int i=0;i<num_sets;i++)
+    {
+        for(int j=0; j<associativity; j++)
+        {
+            sets[i]->rep_nodes[j]->replacement_counter=0;
+        }
+    }
+}
 bool rep::prediction_feedback(bool actual_outcome, uint64_t pc, uint64_t bhr, uint64_t value, bool bp_prediction, bool rep_prediction)
 {
+    flush_counter--;
+    if(flush_counter==0)
+    {
+        // flush_replacement_counters();
+        flush_counter=FLUSH_INTERVAL;
+    }    
     int64_t index = get_index(pc,bhr);
     int64_t tag = get_tag(pc,bhr,value);
     rep_set* target_set = sets[index];
@@ -123,6 +142,7 @@ bool rep::prediction_feedback(bool actual_outcome, uint64_t pc, uint64_t bhr, ui
                 target_set->rep_nodes[i]->counters[selector] = decrement_count(target_set->rep_nodes[i]->counters[selector]);
             }
             is_found = true;
+            break;
         }
     }
     // assert(is_found && "If the feedback isnt't able to find the record then there is a problem with my understanding of the working of REP replacement");
@@ -146,7 +166,7 @@ bool rep::prediction_feedback(bool actual_outcome, uint64_t pc, uint64_t bhr, ui
         target_set->rep_nodes[target_way]->counters[selector] = (uint64_t)actual_outcome+(uint64_t)1;
         target_set->rep_nodes[target_way]->is_valid = true;
         target_set->rep_nodes[target_way]->tag = tag;
-        target_set->rep_nodes[target_way]->replacement_counter = 0;
+        target_set->rep_nodes[target_way]->replacement_counter = 2;
     }
     return true;
 }

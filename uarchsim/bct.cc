@@ -9,6 +9,10 @@ bct::bct(uint64_t bct_size){
     }
     num_entries = (bct_size*8)/entry_size;      //Multiply by 8 since size should be in bytes    
     counters = new int[num_entries];
+    for(int i=0;i<num_entries;i++)
+    {
+        counters[i]=0;
+    }
 }
 uint64_t bct::get_index(uint64_t pc){
     uint64_t index = pc>>2;

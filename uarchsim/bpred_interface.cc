@@ -6,7 +6,9 @@
 #include "stats.h"
 #include "vht.h"
 #include "rep.h"
-
+#include <list>
+#include <utility>
+std::list<std::pair<uint32_t,uint32_t>*> os_branches_not_in_active_list;
 //unsigned int HIST_MASK = 0xfffc;
 //unsigned int HIST_BIT  = 0x8000;
 //unsigned int PC_MASK   = 0x3fff;
@@ -287,14 +289,14 @@ void bpred_interface::make_predictions(unsigned int branch_history, vht* _vht, r
 			history = cti_Q[cti_tail].history;
 			pred_index = ((history & HIST_MASK) ^
 							((cti_Q[cti_tail].pc / insn_size) & PC_MASK)) & BP_INDEX_MASK;
-
+			_vht->increment_os_branch_count(cti_Q[cti_tail].pc,history);
 			*vht_hit = _vht->get_value(cti_Q[cti_tail].pc,history,vht_value);
 			if(*vht_hit)
 			{
 				*rep_hit = _rep->get_prediction(cti_Q[cti_tail].pc,history,*vht_value,&prediction);
 			}
-			_vht->increment_os_branch_count(cti_Q[cti_tail].pc,history);
-
+						
+			os_branches_not_in_active_list.push_front(new std::pair<uint32_t,uint32_t>(cti_Q[cti_tail].pc,history));			
 			if(*vht_hit && *rep_hit)
 			{					   
 				cti_Q[cti_tail].taken = prediction;	

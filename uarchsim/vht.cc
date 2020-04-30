@@ -14,10 +14,16 @@ bool vht::get_value(uint64_t pc, uint64_t bhr, uint64_t* value)
     int diff;
     bool hit = _bdc->get_difference(pc, bhr, &diff);
     uint64_t count = _bct->get_count(pc,bhr);
-    *value = diff^count;
+    *value = (diff<<8)|count;
     return hit;
 
 }
+uint64_t vht::get_os_branch_count(uint64_t pc, uint64_t bhr)
+{
+    // printf("called increment_os_branch_count\n");
+    return _bct->get_count(pc,bhr);
+}
+
 bool vht::increment_os_branch_count(uint64_t pc, uint64_t bhr)
 {
     // printf("called increment_os_branch_count\n");
