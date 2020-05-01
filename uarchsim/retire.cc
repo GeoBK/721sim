@@ -111,18 +111,18 @@ void pipeline_t::retire(size_t& instret) {
          }
          _vht->update_branch_difference(PAY.buf[PAY.head].pc,PAY.buf[PAY.head].bhr, diff);
          
-         if(PAY.buf[PAY.head].next_pc != PAY.buf[PAY.head].c_next_pc){            
-            if(PAY.buf[PAY.head].pc==0x10904 && diff!=0)
-            {
-               printf("diff_not_0_count: %d\n", diff_not_0_count++);   
-               printf("PAY.buf[index].vht_value: %llx, diff=%d:, rep_pred: %d, actual_outcome: %d\n",PAY.buf[PAY.head].vht_value, diff,PAY.buf[PAY.head].rep_pred,actual_outcome);
-            }
-            if(PAY.buf[PAY.head].pc==0x10904 && diff==0)
-            {            
-               printf("diff_0_count: %d\n", diff_0_count++);   
-               printf("PAY.buf[index].vht_value: %llx, diff=%d:, rep_pred: %d, actual_outcome: %d\n",PAY.buf[PAY.head].vht_value, diff,PAY.buf[PAY.head].rep_pred,actual_outcome);
-            }     
-         }                  
+         // if(PAY.buf[PAY.head].next_pc != PAY.buf[PAY.head].c_next_pc){            
+         //    if(PAY.buf[PAY.head].pc==0x10904 && diff!=0)
+         //    {
+         //       printf("diff_not_0_count: %d\n", diff_not_0_count++);   
+         //       printf("PAY.buf[index].vht_value: %llx, diff=%d:, rep_pred: %d, actual_outcome: %d\n",PAY.buf[PAY.head].vht_value, diff,PAY.buf[PAY.head].rep_pred,actual_outcome);
+         //    }
+         //    if(PAY.buf[PAY.head].pc==0x10904 && diff==0)
+         //    {            
+         //       printf("diff_0_count: %d\n", diff_0_count++);   
+         //       printf("PAY.buf[index].vht_value: %llx, diff=%d:, rep_pred: %d, actual_outcome: %d\n",PAY.buf[PAY.head].vht_value, diff,PAY.buf[PAY.head].rep_pred,actual_outcome);
+         //    }     
+         // }                  
       }
       
 

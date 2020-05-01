@@ -57,6 +57,8 @@ static void help()
   fprintf(stderr, "  --l2=<S>:<W>:<B>   B both powers of 2).\n");
   fprintf(stderr, "  --extension=<name> Specify RoCC Extension\n");
   fprintf(stderr, "  --extlib=<name>    Shared library to load\n");
+  fprintf(stderr, "  --repsize=<n>      REP size in bytes (default is 6144)\n");
+  fprintf(stderr, "  --repassoc=<n>     REP associativity (default is fully associative ie 8)\n");
   exit(1);
 }
 
@@ -236,6 +238,8 @@ int main(int argc, char** argv)
   parser.option(0, "lane" ,1, [&](const char *s){set_lane_matrix(s);});
   parser.option(0, "lat"  ,1, [&](const char *s){set_lane_latencies(s);});
   parser.option(0, "nol2", 1, [&](const char* s){L2_PRESENT = false;});
+  parser.option(0, "repsize", 1, [&](const char* s){rep_size = atoll(s);});
+  parser.option(0, "repassoc", 1, [&](const char* s){rep_assoc = atoll(s);});
 
   auto argv1 = parser.parse(argv);
   if (!*argv1)

@@ -43,12 +43,12 @@ uint64_t rep::get_index(uint64_t pc, uint64_t bhr)
 uint64_t rep::get_tag(uint64_t pc, uint64_t bhr, uint64_t value)
 {
     //Tag = {000, PC[14:8]}   ^   {GBH[6:9],000000}   ^   {BDT, BCT}
-    // uint64_t shifted_pc = pc/num_sets;
-    // uint64_t mask = 0xffffffffffffff00;
-    // uint64_t padded_gbh = bhr&mask;
-    // return shifted_pc^padded_gbh^value;
+    uint64_t shifted_pc = pc/num_sets;
+    uint64_t mask = 0xffffffffffffff00;
+    uint64_t padded_gbh = bhr&mask;
+    return shifted_pc^padded_gbh^value;
 
-    return (pc<<16)|value;
+    // return (pc<<16)|value;
 
 }
 
